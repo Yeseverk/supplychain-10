@@ -8,6 +8,8 @@ import com.lyf.supplychain.common.feign.system.SystemPlanLimitCheckRequest;
 import com.lyf.supplychain.common.feign.system.SystemPlanLimitCheckResponse;
 import com.lyf.supplychain.common.feign.system.SystemPlanLimitFeignClient;
 import com.lyf.supplychain.common.security.annotation.PlanLimit;
+import com.lyf.supplychain.common.security.context.SecurityContextHolder;
+import com.lyf.supplychain.common.security.model.LoginUser;
 import com.lyf.supplychain.common.security.plan.PlanUsageProvider;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
@@ -47,7 +49,7 @@ public class PlanLimitAspect {
      */
     @Around("@annotation(planLimit)")
     public Object checkPlanLimit(ProceedingJoinPoint joinPoint, PlanLimit planLimit) throws Throwable {
-        Long tenantId = TenantContext.getTenantId();
+        Long tenantId = resolveTenantId();
         if (tenantId == null) {
             BusinessException.throwException(ResultCode.UNAUTHORIZED);
         }
@@ -57,6 +59,15 @@ public class PlanLimitAspect {
             BusinessException.throwException(ResultCode.FORBIDDEN.getCode(), message);
         }
         return joinPoint.proceed();
+    }
+
+    private Long resolveTenantId() {
+        Long tenantId = TenantContext.getTenantId();
+        if (tenantId != null) {
+            return tenantId;
+        }
+        LoginUser loginUser = SecurityContextHolder.getLoginUser();
+        return loginUser == null ? null : loginUser.getTenantId();
     }
 
     private SystemPlanLimitCheckRequest buildRequest(Long tenantId, PlanLimit planLimit) {

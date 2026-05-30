@@ -8,6 +8,8 @@ import com.lyf.supplychain.common.feign.system.SystemPlanLimitCheckRequest;
 import com.lyf.supplychain.common.feign.system.SystemPlanLimitCheckResponse;
 import com.lyf.supplychain.common.feign.system.SystemPlanLimitFeignClient;
 import com.lyf.supplychain.common.security.annotation.PlanLimit;
+import com.lyf.supplychain.common.security.context.SecurityContextHolder;
+import com.lyf.supplychain.common.security.model.LoginUser;
 import com.lyf.supplychain.common.security.plan.PlanUsageProvider;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
@@ -33,6 +35,7 @@ class PlanLimitAspectTest {
     @AfterEach
     void tearDown() {
         TenantContext.clear();
+        SecurityContextHolder.clear();
     }
 
     @Test
@@ -47,6 +50,21 @@ class PlanLimitAspectTest {
         assertThat(requests.get(0).getTenantId()).isEqualTo(101L);
         assertThat(requests.get(0).getFeatureCode()).isEqualTo("supplier.max");
         assertThat(requests.get(0).getCurrentUsage()).isEqualTo(19);
+    }
+
+    @Test
+    void checkPlanLimitShouldUseSecurityContextWhenTenantContextMissing() {
+        SecurityContextHolder.setLoginUser(LoginUser.builder()
+                .tenantId(202L)
+                .userId(601L)
+                .build());
+        DemoService proxy = proxy();
+
+        String result = proxy.createSupplier();
+
+        assertThat(result).isEqualTo("ok");
+        assertThat(requests).hasSize(1);
+        assertThat(requests.get(0).getTenantId()).isEqualTo(202L);
     }
 
     @Test

@@ -8,6 +8,8 @@ import com.lyf.supplychain.common.feign.system.SystemTenantWriteCheckRequest;
 import com.lyf.supplychain.common.feign.system.SystemTenantWriteCheckResponse;
 import com.lyf.supplychain.common.feign.system.SystemTenantWriteFeignClient;
 import com.lyf.supplychain.common.security.annotation.TenantWriteGuard;
+import com.lyf.supplychain.common.security.context.SecurityContextHolder;
+import com.lyf.supplychain.common.security.model.LoginUser;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.aop.aspectj.annotation.AspectJProxyFactory;
@@ -32,6 +34,7 @@ class TenantWriteGuardAspectTest {
     @AfterEach
     void tearDown() {
         TenantContext.clear();
+        SecurityContextHolder.clear();
     }
 
     @Test
@@ -45,6 +48,21 @@ class TenantWriteGuardAspectTest {
         assertThat(requests).hasSize(1);
         assertThat(requests.get(0).getTenantId()).isEqualTo(101L);
         assertThat(requests.get(0).getScene()).isEqualTo("创建订单");
+    }
+
+    @Test
+    void writeOperationShouldUseSecurityContextWhenTenantContextMissing() {
+        SecurityContextHolder.setLoginUser(LoginUser.builder()
+                .tenantId(202L)
+                .userId(601L)
+                .build());
+        DemoService proxy = proxy();
+
+        String result = proxy.createOrder();
+
+        assertThat(result).isEqualTo("ok");
+        assertThat(requests).hasSize(1);
+        assertThat(requests.get(0).getTenantId()).isEqualTo(202L);
     }
 
     @Test

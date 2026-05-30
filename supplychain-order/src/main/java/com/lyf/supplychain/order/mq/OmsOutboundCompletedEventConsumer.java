@@ -1,6 +1,7 @@
 package com.lyf.supplychain.order.mq;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.lyf.supplychain.common.context.TenantContext;
 import com.lyf.supplychain.common.event.WmsOutboundCompletedEvent;
 import com.lyf.supplychain.common.idempotent.RedisIdempotentService;
 import com.lyf.supplychain.common.redis.CommonRedisKeys;
@@ -65,20 +66,30 @@ public class OmsOutboundCompletedEventConsumer implements RocketMQListener<Strin
             log.error("WMS出库完成事件反序列化失败，message={}", message, exception);
             throw new IllegalArgumentException("WMS出库完成事件反序列化失败", exception);
         }
+        Long tenantId = event.getTenantId();
         String idempotentToken = event.getOrderNo() + ":" + event.getOutboundNo();
-        boolean firstConsume = idempotentService.markIfAbsent(IDEMPOTENT_SCENE, idempotentToken,
+        boolean firstConsume = idempotentService.markIfAbsent(tenantId, IDEMPOTENT_SCENE, idempotentToken,
                 Duration.ofDays(properties.getIdempotentTtlDays()));
         if (!firstConsume) {
-            log.info("WMS出库完成事件已消费，跳过重复消息，orderNo={}，outboundNo={}", event.getOrderNo(), event.getOutboundNo());
+            log.info("WMS outbound event duplicated, orderNo={}, outboundNo={}", event.getOrderNo(), event.getOutboundNo());
             return;
         }
+        Long previousTenantId = TenantContext.getTenantId();
+        Long previousUserId = TenantContext.getUserId();
         try {
+            TenantContext.set(tenantId, previousUserId);
             orderMainService.outboundCallback(event.getOrderNo(), event.getOutboundNo());
-            log.info("WMS出库完成事件消费成功，orderNo={}，outboundNo={}", event.getOrderNo(), event.getOutboundNo());
+            log.info("WMS outbound event consumed, orderNo={}, outboundNo={}", event.getOrderNo(), event.getOutboundNo());
         } catch (Exception exception) {
-            redisTemplate.delete(CommonRedisKeys.idempotent(IDEMPOTENT_SCENE, idempotentToken));
-            log.error("WMS出库完成事件消费失败，orderNo={}，outboundNo={}", event.getOrderNo(), event.getOutboundNo(), exception);
+            redisTemplate.delete(CommonRedisKeys.idempotent(tenantId, IDEMPOTENT_SCENE, idempotentToken));
+            log.error("WMS outbound event consume failed, orderNo={}, outboundNo={}", event.getOrderNo(), event.getOutboundNo(), exception);
             throw exception;
+        } finally {
+            if (previousTenantId == null) {
+                TenantContext.clear();
+            } else {
+                TenantContext.set(previousTenantId, previousUserId);
+            }
         }
     }
 }

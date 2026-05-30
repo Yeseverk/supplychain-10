@@ -149,7 +149,7 @@ class PlatformInventoryAllocationServiceImplTest {
 
         @Override
         public Long selectCount(Wrapper<PlatformInventoryAllocation> queryWrapper) {
-            return 0L;
+            return 1L;
         }
 
         @Override

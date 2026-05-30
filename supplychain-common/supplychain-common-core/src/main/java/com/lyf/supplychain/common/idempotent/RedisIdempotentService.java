@@ -37,4 +37,22 @@ public class RedisIdempotentService {
         );
         return Boolean.TRUE.equals(success);
     }
+
+    /**
+     * Tenant-aware idempotent marker to avoid cross-tenant token collisions.
+     *
+     * @param tenantId   tenant ID
+     * @param scene      business scene
+     * @param token      idempotent token
+     * @param expireTime expiration time
+     * @return whether this is the first processing attempt
+     */
+    public boolean markIfAbsent(Long tenantId, String scene, String token, Duration expireTime) {
+        Boolean success = redisTemplate.opsForValue().setIfAbsent(
+                CommonRedisKeys.idempotent(tenantId, scene, token),
+                "1",
+                expireTime
+        );
+        return Boolean.TRUE.equals(success);
+    }
 }

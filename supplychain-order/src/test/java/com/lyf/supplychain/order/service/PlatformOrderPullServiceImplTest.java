@@ -1,6 +1,5 @@
 package com.lyf.supplychain.order.service;
 
-import com.lyf.supplychain.common.api.PageQuery;
 import com.lyf.supplychain.common.api.PageResult;
 import com.lyf.supplychain.order.config.OrderPlatformPullProperties;
 import com.lyf.supplychain.order.entity.OrderLog;
@@ -12,6 +11,7 @@ import com.lyf.supplychain.order.request.OrderCancelRequest;
 import com.lyf.supplychain.order.request.OrderCreateRequest;
 import com.lyf.supplychain.order.request.OrderFlagRequest;
 import com.lyf.supplychain.order.request.OrderMergeRequest;
+import com.lyf.supplychain.order.request.OrderPageQuery;
 import com.lyf.supplychain.order.request.OrderSplitRequest;
 import com.lyf.supplychain.order.request.WebhookRequest;
 import com.lyf.supplychain.order.service.impl.PlatformOrderPullServiceImpl;
@@ -83,7 +83,7 @@ class PlatformOrderPullServiceImplTest {
         }
 
         @Override
-        public PageResult<OrderMain> page(PageQuery query) {
+        public PageResult<OrderMain> page(OrderPageQuery query) {
             throw new UnsupportedOperationException();
         }
 

@@ -5,8 +5,9 @@ import com.baomidou.mybatisplus.extension.plugins.MybatisPlusInterceptor;
 import com.baomidou.mybatisplus.extension.plugins.inner.OptimisticLockerInnerInterceptor;
 import com.baomidou.mybatisplus.extension.plugins.inner.PaginationInnerInterceptor;
 import com.baomidou.mybatisplus.extension.plugins.inner.TenantLineInnerInterceptor;
-import cn.hutool.core.util.ObjectUtil;
 import com.lyf.supplychain.common.context.TenantContext;
+import com.lyf.supplychain.common.exception.BusinessException;
+import com.lyf.supplychain.common.security.context.SecurityContextHolder;
 import net.sf.jsqlparser.expression.LongValue;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -65,9 +66,14 @@ public class MybatisPlusConfig {
 
         @Override
         public LongValue getTenantId() {
-            // 从当前登录上下文读取租户，未登录的内部任务默认使用 0 避免串租户
             Long tenantId = TenantContext.getTenantId();
-            return new LongValue(ObjectUtil.defaultIfNull(tenantId, 0L));
+            if (tenantId == null) {
+                tenantId = SecurityContextHolder.getTenantId();
+            }
+            if (tenantId == null) {
+                throw new BusinessException("Tenant context missing, reject tenant-table database operation");
+            }
+            return new LongValue(tenantId);
         }
 
         @Override

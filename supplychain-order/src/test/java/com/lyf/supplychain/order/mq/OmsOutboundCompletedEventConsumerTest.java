@@ -1,6 +1,7 @@
 package com.lyf.supplychain.order.mq;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.lyf.supplychain.common.context.TenantContext;
 import com.lyf.supplychain.common.event.WmsOutboundCompletedEvent;
 import com.lyf.supplychain.common.idempotent.RedisIdempotentService;
 import com.lyf.supplychain.common.redis.CommonRedisKeys;
@@ -16,6 +17,7 @@ import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
 /**
@@ -32,12 +34,13 @@ class OmsOutboundCompletedEventConsumerTest {
         StringRedisTemplate redisTemplate = mock(StringRedisTemplate.class);
         OrderMainService orderMainService = mock(OrderMainService.class);
         OmsOutboundCompletedEventConsumer consumer = newConsumer(idempotentService, redisTemplate, orderMainService);
-        when(idempotentService.markIfAbsent(eq("wms:outbound:completed"), eq("SO-001:OUT-001"), any(Duration.class)))
+        when(idempotentService.markIfAbsent(eq(101L), eq("wms:outbound:completed"), eq("SO-001:OUT-001"), any(Duration.class)))
                 .thenReturn(true);
 
         consumer.onMessage(message("SO-001", "OUT-001"));
 
         verify(orderMainService).outboundCallback("SO-001", "OUT-001");
+        assertThat(TenantContext.getTenantId()).isNull();
     }
 
     @Test
@@ -46,7 +49,7 @@ class OmsOutboundCompletedEventConsumerTest {
         StringRedisTemplate redisTemplate = mock(StringRedisTemplate.class);
         OrderMainService orderMainService = mock(OrderMainService.class);
         OmsOutboundCompletedEventConsumer consumer = newConsumer(idempotentService, redisTemplate, orderMainService);
-        when(idempotentService.markIfAbsent(eq("wms:outbound:completed"), eq("SO-001:OUT-001"), any(Duration.class)))
+        when(idempotentService.markIfAbsent(eq(101L), eq("wms:outbound:completed"), eq("SO-001:OUT-001"), any(Duration.class)))
                 .thenReturn(false);
 
         consumer.onMessage(message("SO-001", "OUT-001"));
@@ -60,7 +63,7 @@ class OmsOutboundCompletedEventConsumerTest {
         StringRedisTemplate redisTemplate = mock(StringRedisTemplate.class);
         OrderMainService orderMainService = mock(OrderMainService.class);
         OmsOutboundCompletedEventConsumer consumer = newConsumer(idempotentService, redisTemplate, orderMainService);
-        when(idempotentService.markIfAbsent(eq("wms:outbound:completed"), eq("SO-001:OUT-001"), any(Duration.class)))
+        when(idempotentService.markIfAbsent(eq(101L), eq("wms:outbound:completed"), eq("SO-001:OUT-001"), any(Duration.class)))
                 .thenReturn(true);
         org.mockito.Mockito.doThrow(new IllegalStateException("failed"))
                 .when(orderMainService).outboundCallback("SO-001", "OUT-001");
@@ -68,7 +71,7 @@ class OmsOutboundCompletedEventConsumerTest {
         org.assertj.core.api.Assertions.assertThatThrownBy(() -> consumer.onMessage(message("SO-001", "OUT-001")))
                 .isInstanceOf(IllegalStateException.class);
 
-        verify(redisTemplate).delete(CommonRedisKeys.idempotent("wms:outbound:completed", "SO-001:OUT-001"));
+        verify(redisTemplate).delete(CommonRedisKeys.idempotent(101L, "wms:outbound:completed", "SO-001:OUT-001"));
     }
 
     private OmsOutboundCompletedEventConsumer newConsumer(RedisIdempotentService idempotentService,
@@ -82,6 +85,7 @@ class OmsOutboundCompletedEventConsumerTest {
 
     private String message(String orderNo, String outboundNo) throws Exception {
         WmsOutboundCompletedEvent event = new WmsOutboundCompletedEvent();
+        event.setTenantId(101L);
         event.setOrderNo(orderNo);
         event.setOutboundNo(outboundNo);
         return new ObjectMapper().writeValueAsString(event);

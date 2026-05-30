@@ -1,5 +1,6 @@
 package com.lyf.supplychain.common.redis;
 
+import com.lyf.supplychain.common.context.TenantContext;
 import com.lyf.supplychain.common.idempotent.RedisIdempotentService;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -26,7 +27,9 @@ class CommonRedisInfrastructureTest {
     void commonRedisKeysShouldBuildStableKeys() {
         assertThat(CommonRedisKeys.permission(501L)).isEqualTo("supplychain:permission:501");
         assertThat(CommonRedisKeys.idempotent("order:create", "REQ-001")).isEqualTo("supplychain:idempotent:order:create:REQ-001");
+        assertThat(CommonRedisKeys.idempotent(101L, "order:create", "REQ-001")).isEqualTo("supplychain:idempotent:101:order:create:REQ-001");
         assertThat(CommonRedisKeys.lock("inventory", "SKU001")).isEqualTo("supplychain:lock:inventory:SKU001");
+        assertThat(CommonRedisKeys.lock(101L, "inventory", "SKU001")).isEqualTo("supplychain:lock:101:inventory:SKU001");
         assertThat(CommonRedisKeys.wmsInventorySku(101L, 1001L)).isEqualTo("supplychain:wms:inventory:sku:101:1001");
     }
 
@@ -42,6 +45,22 @@ class CommonRedisInfrastructureTest {
 
         assertThat(service.markIfAbsent("order:create", "REQ-001", Duration.ofMinutes(5))).isTrue();
         assertThat(service.markIfAbsent("order:create", "REQ-001", Duration.ofMinutes(5))).isFalse();
+    }
+
+    @Test
+    void lockTemplateShouldBuildTenantAwareKey() {
+        StringRedisTemplate redisTemplate = Mockito.mock(StringRedisTemplate.class);
+        ValueOperations<String, String> valueOperations = Mockito.mock(ValueOperations.class);
+        when(redisTemplate.opsForValue()).thenReturn(valueOperations);
+        when(valueOperations.setIfAbsent(eq("supplychain:lock:101:inventory:SKU001"), Mockito.anyString(), eq(Duration.ofSeconds(5))))
+                .thenReturn(true);
+        RedisDistributedLockTemplate lockTemplate = new RedisDistributedLockTemplate(redisTemplate);
+        TenantContext.set(101L, 501L);
+
+        String result = lockTemplate.executeWithTenant("inventory", "SKU001", Duration.ofSeconds(5), () -> "ok");
+
+        assertThat(result).isEqualTo("ok");
+        TenantContext.clear();
     }
 
     @Test

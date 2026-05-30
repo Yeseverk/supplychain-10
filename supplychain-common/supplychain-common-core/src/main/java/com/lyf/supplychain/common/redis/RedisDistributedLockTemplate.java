@@ -1,6 +1,7 @@
 package com.lyf.supplychain.common.redis;
 
 import cn.hutool.core.util.StrUtil;
+import com.lyf.supplychain.common.context.TenantContext;
 import com.lyf.supplychain.common.exception.BusinessException;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.script.DefaultRedisScript;
@@ -63,6 +64,24 @@ public class RedisDistributedLockTemplate {
      * @param token   锁令牌
      * @return 是否释放成功
      */
+    /**
+     * Execute logic with a lock key isolated by current tenant context.
+     *
+     * @param scene      business scene
+     * @param bizId      business ID
+     * @param expireTime lock expiration time
+     * @param supplier   business logic
+     * @param <T>        return type
+     * @return business result
+     */
+    public <T> T executeWithTenant(String scene, String bizId, Duration expireTime, Supplier<T> supplier) {
+        Long tenantId = TenantContext.getTenantId();
+        if (tenantId == null) {
+            BusinessException.throwException("Tenant context missing, cannot create tenant-aware lock");
+        }
+        return execute(CommonRedisKeys.lock(tenantId, scene, bizId), expireTime, supplier);
+    }
+
     public boolean unlock(String lockKey, String token) {
         if (StrUtil.hasBlank(lockKey, token)) {
             return false;

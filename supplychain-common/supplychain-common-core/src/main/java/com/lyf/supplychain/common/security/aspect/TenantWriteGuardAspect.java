@@ -8,6 +8,8 @@ import com.lyf.supplychain.common.feign.system.SystemTenantWriteCheckRequest;
 import com.lyf.supplychain.common.feign.system.SystemTenantWriteCheckResponse;
 import com.lyf.supplychain.common.feign.system.SystemTenantWriteFeignClient;
 import com.lyf.supplychain.common.security.annotation.TenantWriteGuard;
+import com.lyf.supplychain.common.security.context.SecurityContextHolder;
+import com.lyf.supplychain.common.security.model.LoginUser;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
@@ -41,7 +43,7 @@ public class TenantWriteGuardAspect {
      */
     @Around("@annotation(tenantWriteGuard)")
     public Object checkTenantCanWrite(ProceedingJoinPoint joinPoint, TenantWriteGuard tenantWriteGuard) throws Throwable {
-        Long tenantId = TenantContext.getTenantId();
+        Long tenantId = resolveTenantId();
         if (tenantId == null) {
             BusinessException.throwException(ResultCode.UNAUTHORIZED);
         }
@@ -51,6 +53,15 @@ public class TenantWriteGuardAspect {
             BusinessException.throwException(ResultCode.FORBIDDEN.getCode(), message);
         }
         return joinPoint.proceed();
+    }
+
+    private Long resolveTenantId() {
+        Long tenantId = TenantContext.getTenantId();
+        if (tenantId != null) {
+            return tenantId;
+        }
+        LoginUser loginUser = SecurityContextHolder.getLoginUser();
+        return loginUser == null ? null : loginUser.getTenantId();
     }
 
     private SystemTenantWriteCheckRequest buildRequest(Long tenantId, TenantWriteGuard tenantWriteGuard) {

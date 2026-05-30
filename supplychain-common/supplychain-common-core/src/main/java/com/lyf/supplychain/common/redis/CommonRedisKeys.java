@@ -80,6 +80,18 @@ public final class CommonRedisKeys {
     }
 
     /**
+     * Tenant-aware distributed lock key.
+     *
+     * @param tenantId tenant ID
+     * @param scene    business scene
+     * @param bizId    business ID
+     * @return Redis Key
+     */
+    public static String lock(Long tenantId, String scene, String bizId) {
+        return PREFIX + "lock:" + normalize(String.valueOf(tenantId)) + ":" + normalize(scene) + ":" + normalize(bizId);
+    }
+
+    /**
      * 幂等标记 Key。
      *
      * @param scene 业务场景
@@ -88,6 +100,18 @@ public final class CommonRedisKeys {
      */
     public static String idempotent(String scene, String token) {
         return PREFIX + "idempotent:" + normalize(scene) + ":" + normalize(token);
+    }
+
+    /**
+     * Tenant-aware idempotent marker key.
+     *
+     * @param tenantId tenant ID
+     * @param scene    business scene
+     * @param token    idempotent token
+     * @return Redis Key
+     */
+    public static String idempotent(Long tenantId, String scene, String token) {
+        return PREFIX + "idempotent:" + normalize(String.valueOf(tenantId)) + ":" + normalize(scene) + ":" + normalize(token);
     }
 
     /**

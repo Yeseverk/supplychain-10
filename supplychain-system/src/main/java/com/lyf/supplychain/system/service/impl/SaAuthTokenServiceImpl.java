@@ -1,9 +1,13 @@
 package com.lyf.supplychain.system.service.impl;
 
 import cn.hutool.core.util.StrUtil;
+import cn.dev33.satoken.exception.NotLoginException;
+import cn.dev33.satoken.session.SaSession;
 import cn.dev33.satoken.stp.StpUtil;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.lyf.supplychain.common.redis.CommonRedisKeys;
 import com.lyf.supplychain.common.security.constant.SecurityConstants;
+import com.lyf.supplychain.common.security.context.SecurityContextHolder;
 import com.lyf.supplychain.common.security.model.LoginUser;
 import com.lyf.supplychain.system.service.AuthTokenService;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -25,8 +29,11 @@ public class SaAuthTokenServiceImpl implements AuthTokenService {
 
     private final StringRedisTemplate redisTemplate;
 
-    public SaAuthTokenServiceImpl(StringRedisTemplate redisTemplate) {
+    private final ObjectMapper objectMapper;
+
+    public SaAuthTokenServiceImpl(StringRedisTemplate redisTemplate, ObjectMapper objectMapper) {
         this.redisTemplate = redisTemplate;
+        this.objectMapper = objectMapper;
     }
 
     /**
@@ -113,6 +120,24 @@ public class SaAuthTokenServiceImpl implements AuthTokenService {
      */
     @Override
     public LoginUser getLoginUser() {
-        return (LoginUser) StpUtil.getSession().get(SecurityConstants.LOGIN_USER_SESSION_KEY);
+        LoginUser contextUser = SecurityContextHolder.getLoginUser();
+        if (contextUser != null) {
+            return contextUser;
+        }
+        try {
+            SaSession session = StpUtil.getSession(false);
+            Object value = session == null ? null : session.get(SecurityConstants.LOGIN_USER_SESSION_KEY);
+            if (value == null) {
+                return null;
+            }
+            if (value instanceof LoginUser loginUser) {
+                return loginUser;
+            }
+            return objectMapper.convertValue(value, LoginUser.class);
+        } catch (NotLoginException ignored) {
+            return null;
+        } catch (IllegalArgumentException exception) {
+            return null;
+        }
     }
 }
