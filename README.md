@@ -111,7 +111,7 @@ mvn -pl supplychain-purchase,supplychain-warehouse,supplychain-finance -am -Dski
 
 ### Database
 
-SQL scripts are stored in `sql/`. Apply schema scripts first, then seed or repair scripts according to the target environment.
+SQL scripts are stored in `sql/`. For a fresh local or demo database, run `sql/00_full_schema.sql` first, then `sql/01_demo_seed.sql`. The older numbered SQL files are kept as source history and should not be mixed manually for new environments.
 
 ### Configuration
 
