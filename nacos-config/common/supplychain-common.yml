@@ -1,0 +1,77 @@
+﻿# DataId: supplychain-common.yml
+# Group: SUPPLYCHAIN_GROUP
+# Namespace: 11b2def2-6737-44ad-be78-e3dc686a02ec
+# 说明：所有后端服务共享的远程通用配置。
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://${MYSQL_HOST:127.0.0.1}:${MYSQL_PORT:3306}/supplychain_dev?useUnicode=true&characterEncoding=UTF-8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
+    username: ${MYSQL_USERNAME:root}
+    password: 123456
+    hikari:
+      minimum-idle: 5
+      maximum-pool-size: 20
+      connection-timeout: 30000
+  data:
+    redis:
+      host: ${REDIS_HOST:127.0.0.1}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+      database: ${REDIS_DATABASE:0}
+      timeout: 3000ms
+
+mybatis-plus:
+  mapper-locations: classpath*:mapper/**/*.xml
+  configuration:
+    map-underscore-to-camel-case: true
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+  global-config:
+    db-config:
+      id-type: ASSIGN_ID
+      logic-delete-field: isDeleted
+      logic-delete-value: 1
+      logic-not-delete-value: 0
+
+sa-token:
+  token-name: Authorization
+  timeout: 7200
+  active-timeout: 604800
+  is-concurrent: true
+  max-login-count: 5
+  token-style: jwt-simple
+  jwt-secret-key: ${JWT_SECRET_KEY:supplychain-dev-secret-key-change-in-prod}
+  is-share: false
+  is-print: false
+
+supplychain:
+  security:
+    xss-enabled: true
+
+knife4j:
+  enable: true
+  setting:
+    language: zh_cn
+
+seata:
+  enabled: ${SEATA_ENABLED:false}
+  application-id: ${spring.application.name}
+  tx-service-group: ${SEATA_TX_SERVICE_GROUP:supplychain-tx-group}
+  service:
+    vgroup-mapping:
+      supplychain-tx-group: ${SEATA_CLUSTER:default}
+    grouplist:
+      default: ${SEATA_SERVER_ADDR:127.0.0.1:8091}
+  registry:
+    type: nacos
+    nacos:
+      server-addr: ${NACOS_ADDR:127.0.0.1:8848}
+      namespace: ${NACOS_NAMESPACE:11b2def2-6737-44ad-be78-e3dc686a02ec}
+      group: SEATA_GROUP
+      application: seata-server
+  config:
+    type: nacos
+    nacos:
+      server-addr: ${NACOS_ADDR:127.0.0.1:8848}
+      namespace: ${NACOS_NAMESPACE:11b2def2-6737-44ad-be78-e3dc686a02ec}
+      group: SEATA_GROUP
+

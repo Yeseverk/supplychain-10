@@ -1,0 +1,29 @@
+# DataId: supplychain-warehouse.yml
+# Group: SUPPLYCHAIN_GROUP
+# Namespace: 11b2def2-6737-44ad-be78-e3dc686a02ec
+# 说明：仓储管理服务远程扩展配置。
+server:
+  port: 9204
+
+spring:
+  main:
+    allow-bean-definition-overriding: true
+
+supplychain:
+  warehouse:
+    inventory-log-retention-days: 365
+    inventory-cache:
+      enabled: ${WMS_INVENTORY_CACHE_ENABLED:true}
+      ttl-minutes: ${WMS_INVENTORY_CACHE_TTL_MINUTES:60}
+      empty-ttl-minutes: ${WMS_INVENTORY_CACHE_EMPTY_TTL_MINUTES:5}
+      random-seconds: ${WMS_INVENTORY_CACHE_RANDOM_SECONDS:300}
+      lock-seconds: ${WMS_INVENTORY_CACHE_LOCK_SECONDS:10}
+    outbound-event:
+      mode: ${WMS_OUTBOUND_EVENT_MODE:feign}
+      topic: ${WMS_OUTBOUND_EVENT_TOPIC:wms-outbound-topic}
+      send-timeout-ms: ${WMS_OUTBOUND_EVENT_SEND_TIMEOUT_MS:3000}
+
+rocketmq:
+  name-server: ${ROCKETMQ_NAME_SERVER:127.0.0.1:9876}
+  producer:
+    group: ${ROCKETMQ_WMS_PRODUCER_GROUP:supplychain-warehouse-producer}

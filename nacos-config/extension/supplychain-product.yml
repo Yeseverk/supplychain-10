@@ -1,0 +1,41 @@
+﻿# DataId: supplychain-product.yml
+# Group: SUPPLYCHAIN_GROUP
+# Namespace: 11b2def2-6737-44ad-be78-e3dc686a02ec
+# 说明：商品管理服务远程扩展配置。
+server:
+  port: 9206
+
+spring:
+  main:
+    allow-bean-definition-overriding: true
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://${MYSQL_HOST:127.0.0.1}:${MYSQL_PORT:3306}/${MYSQL_DATABASE:supplychain_dev}?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false
+    username: ${MYSQL_USERNAME:root}
+    password: 123456
+
+mybatis-plus:
+  global-config:
+    db-config:
+      logic-delete-field: isDeleted
+      logic-delete-value: 1
+      logic-not-delete-value: 0
+  configuration:
+    map-underscore-to-camel-case: true
+
+xxl-job:
+  admin:
+    addresses: ${XXL_JOB_ADMIN_ADDRESSES:http://127.0.0.1:8080/xxl-job-admin}
+  executor:
+    appname: supplychain-product
+    address:
+    ip:
+    port: ${XXL_JOB_PRODUCT_PORT:9996}
+    logpath: logs/xxl-job/product
+    logretentiondays: 30
+  accessToken: ${XXL_JOB_ACCESS_TOKEN:}
+
+supplychain:
+  product:
+    default-abc-class: C
+

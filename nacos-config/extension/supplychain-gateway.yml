@@ -1,0 +1,89 @@
+# DataId: supplychain-gateway.yml
+# Group: SUPPLYCHAIN_GROUP
+# Namespace: 11b2def2-6737-44ad-be78-e3dc686a02ec
+# 说明：API 网关远程扩展配置。
+server:
+  port: 9200
+
+spring:
+  cloud:
+    gateway:
+      discovery:
+        locator:
+          enabled: true
+          lower-case-service-id: true
+      routes:
+        - id: supplychain-system
+          uri: ${supplychain.gateway.system-uri:lb://supplychain-system}
+          predicates:
+            - Path=/system/**
+        - id: supplychain-system-api
+          uri: ${supplychain.gateway.system-uri:lb://supplychain-system}
+          predicates:
+            - Path=/api/auth/**,/api/messages/**,/api/saas/**
+        - id: supplychain-system-crud-api
+          uri: ${supplychain.gateway.system-uri:lb://supplychain-system}
+          predicates:
+            - Path=/api/system/**
+          filters:
+            - RewritePath=/api/system/(?<segment>.*), /system/$\{segment}
+        - id: supplychain-supplier
+          uri: ${supplychain.gateway.supplier-uri:lb://supplychain-supplier}
+          predicates:
+            - Path=/api/srm/**
+        - id: supplychain-finance-pms-payables
+          uri: ${supplychain.gateway.finance-uri:lb://supplychain-finance}
+          predicates:
+            - Path=/api/pms/payables,/api/pms/payables/**
+        - id: supplychain-purchase
+          uri: ${supplychain.gateway.purchase-uri:lb://supplychain-purchase}
+          predicates:
+            - Path=/api/pms/**
+        - id: supplychain-warehouse
+          uri: ${supplychain.gateway.warehouse-uri:lb://supplychain-warehouse}
+          predicates:
+            - Path=/api/wms/**
+        - id: supplychain-warehouse-legacy
+          uri: ${supplychain.gateway.warehouse-uri:lb://supplychain-warehouse}
+          predicates:
+            - Path=/wms/**
+        - id: supplychain-finance
+          uri: ${supplychain.gateway.finance-uri:lb://supplychain-finance}
+          predicates:
+            - Path=/api/fms/**
+        - id: supplychain-bi
+          uri: ${supplychain.gateway.finance-uri:lb://supplychain-finance}
+          predicates:
+            - Path=/api/bi/**
+        - id: supplychain-product
+          uri: ${supplychain.gateway.product-uri:lb://supplychain-product}
+          predicates:
+            - Path=/api/pim/**
+        - id: supplychain-order
+          uri: ${supplychain.gateway.order-uri:lb://supplychain-order}
+          predicates:
+            - Path=/api/oms/**
+        - id: supplychain-logistics
+          uri: ${supplychain.gateway.logistics-uri:lb://supplychain-logistics}
+          predicates:
+            - Path=/api/tms/**
+
+supplychain:
+  gateway:
+    security:
+      enabled: true
+      white-list:
+        - /api/auth/login
+        - /api/auth/refresh
+        - /api/saas/tenants/register
+        - /actuator/health
+        - /actuator/info
+        - /internal/
+        - /webhook/
+      rate-limit:
+        enabled: true
+        window-seconds: 60
+        login-limit: 5
+        upload-limit: 3
+        ai-limit: 10
+        default-limit: 120

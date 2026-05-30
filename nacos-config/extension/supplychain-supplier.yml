@@ -1,0 +1,29 @@
+# DataId: supplychain-supplier.yml
+# Group: SUPPLYCHAIN_GROUP
+# Namespace: 11b2def2-6737-44ad-be78-e3dc686a02ec
+# 说明：供应商管理服务远程扩展配置。
+server:
+  port: 9202
+
+spring:
+  main:
+    allow-bean-definition-overriding: true
+
+supplychain:
+  supplier:
+    code-prefix: SUP
+    cert-expire-warning-days: 30
+
+xxl:
+  job:
+    enabled: ${XXL_JOB_ENABLED:false}
+    admin:
+      addresses: ${XXL_JOB_ADMIN_ADDRESSES:http://127.0.0.1:8080/xxl-job-admin}
+    access-token: ${XXL_JOB_ACCESS_TOKEN:}
+    executor:
+      appname: supplychain-supply
+      address: ${XXL_JOB_EXECUTOR_ADDRESS:}
+      ip: ${XXL_JOB_EXECUTOR_IP:}
+      port: ${XXL_JOB_EXECUTOR_PORT:9999}
+      log-path: ${XXL_JOB_LOG_PATH:logs/xxl-job/jobhandler}
+      log-retention-days: ${XXL_JOB_LOG_RETENTION_DAYS:30}

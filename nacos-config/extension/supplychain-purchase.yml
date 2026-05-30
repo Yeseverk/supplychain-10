@@ -1,0 +1,39 @@
+# DataId: supplychain-purchase.yml
+# Group: SUPPLYCHAIN_GROUP
+# Namespace: 11b2def2-6737-44ad-be78-e3dc686a02ec
+# 说明：采购管理服务远程扩展配置。
+server:
+  port: 9203
+
+spring:
+  main:
+    allow-bean-definition-overriding: true
+
+supplychain:
+  purchase:
+    req-code-prefix: REQ
+    inquiry-code-prefix: INQ
+    po-code-prefix: PO
+    receipt-code-prefix: RCV
+    return-code-prefix: RTN
+    approve-free-amount: 10000
+    manager-approve-amount: 50000
+    replenishment:
+      apply-user-id: ${PMS_REPLENISHMENT_APPLY_USER_ID:0}
+      apply-user-name: ${PMS_REPLENISHMENT_APPLY_USER_NAME:系统自动补货}
+      lead-time-days: ${PMS_REPLENISHMENT_LEAD_TIME_DAYS:7}
+      safety-stock-multiplier: ${PMS_REPLENISHMENT_SAFETY_STOCK_MULTIPLIER:2}
+
+xxl:
+  job:
+    enabled: ${XXL_JOB_ENABLED:false}
+    admin:
+      addresses: ${XXL_JOB_ADMIN_ADDRESSES:http://127.0.0.1:8080/xxl-job-admin}
+    access-token: ${XXL_JOB_ACCESS_TOKEN:}
+    executor:
+      appname: ${XXL_JOB_PURCHASE_EXECUTOR:supplychain-purchase}
+      address: ${XXL_JOB_PURCHASE_ADDRESS:}
+      ip: ${XXL_JOB_PURCHASE_IP:}
+      port: ${XXL_JOB_PURCHASE_PORT:9998}
+      log-path: ${XXL_JOB_PURCHASE_LOG_PATH:logs/xxl-job/jobhandler}
+      log-retention-days: ${XXL_JOB_PURCHASE_LOG_RETENTION_DAYS:30}

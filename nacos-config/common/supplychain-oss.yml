@@ -1,0 +1,20 @@
+# DataId: supplychain-oss.yml
+# Group: SUPPLYCHAIN_GROUP
+# Namespace: 11b2def2-6737-44ad-be78-e3dc686a02ec
+# 说明：阿里云 OSS 远程通用配置，复制到 Nacos 后由需要文件存储能力的服务引入。
+supplychain:
+  oss:
+    enabled: ${OSS_ENABLED:false}
+    endpoint: ${OSS_ENDPOINT:https://oss-cn-shenzhen.aliyuncs.com}
+    region: ${OSS_REGION:cn-shenzhen}
+    bucket-name: ${OSS_BUCKET_NAME:supplychain-dev}
+    access-key-id: ${OSS_ACCESS_KEY_ID:}
+    access-key-secret: ${OSS_ACCESS_KEY_SECRET:}
+    security-token: ${OSS_SECURITY_TOKEN:}
+    object-prefix: ${OSS_OBJECT_PREFIX:dev}
+    domain: ${OSS_DOMAIN:}
+    signature-version: ${OSS_SIGNATURE_VERSION:V4}
+    max-connections: ${OSS_MAX_CONNECTIONS:200}
+    connection-timeout: ${OSS_CONNECTION_TIMEOUT:10000}
+    socket-timeout: ${OSS_SOCKET_TIMEOUT:10000}
+    max-error-retry: ${OSS_MAX_ERROR_RETRY:3}

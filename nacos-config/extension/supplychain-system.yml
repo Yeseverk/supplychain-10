@@ -1,0 +1,60 @@
+# DataId: supplychain-system.yml
+# Group: SUPPLYCHAIN_GROUP
+# Namespace: 11b2def2-6737-44ad-be78-e3dc686a02ec
+# 说明：系统管理服务远程扩展配置。
+server:
+  port: 9201
+
+spring:
+  main:
+    allow-bean-definition-overriding: true
+  mail:
+    host: ${MAIL_HOST:}
+    port: ${MAIL_PORT:587}
+    username: ${MAIL_USERNAME:}
+    password: ${MAIL_PASSWORD:}
+    default-encoding: UTF-8
+    properties:
+      mail:
+        smtp:
+          auth: ${MAIL_SMTP_AUTH:true}
+          starttls:
+            enable: ${MAIL_SMTP_STARTTLS_ENABLE:true}
+
+supplychain:
+  system:
+    default-tenant-id: 0
+    password-default-strength: 10
+  notification:
+    mail-enabled: ${SUPPLYCHAIN_MAIL_ENABLED:false}
+    websocket-enabled: ${SUPPLYCHAIN_WEBSOCKET_ENABLED:true}
+    default-from: ${MAIL_FROM:no-reply@supplychain.local}
+  event:
+    outbox:
+      dispatcher-type: ${SUPPLYCHAIN_EVENT_OUTBOX_DISPATCHER_TYPE:local}
+      dispatch-batch-size: ${SUPPLYCHAIN_EVENT_OUTBOX_DISPATCH_BATCH_SIZE:100}
+      retry-batch-size: ${SUPPLYCHAIN_EVENT_OUTBOX_RETRY_BATCH_SIZE:100}
+      max-retry-count: ${SUPPLYCHAIN_EVENT_OUTBOX_MAX_RETRY_COUNT:5}
+      rocketmq:
+        topic: ${SUPPLYCHAIN_EVENT_OUTBOX_ROCKETMQ_TOPIC:supplychain-event-outbox-topic}
+        consumer-group: ${SUPPLYCHAIN_EVENT_OUTBOX_ROCKETMQ_CONSUMER_GROUP:supplychain-system-event-consumer}
+        send-timeout-ms: ${SUPPLYCHAIN_EVENT_OUTBOX_ROCKETMQ_SEND_TIMEOUT_MS:3000}
+
+rocketmq:
+  name-server: ${ROCKETMQ_NAME_SERVER:127.0.0.1:9876}
+  producer:
+    group: ${ROCKETMQ_SYSTEM_PRODUCER_GROUP:supplychain-system-producer}
+
+xxl:
+  job:
+    enabled: ${XXL_JOB_ENABLED:false}
+    admin:
+      addresses: ${XXL_JOB_ADMIN_ADDRESSES:http://127.0.0.1:8080/xxl-job-admin}
+    access-token: ${XXL_JOB_ACCESS_TOKEN:}
+    executor:
+      appname: ${XXL_JOB_EXECUTOR_APPNAME:supplychain-system}
+      address: ${XXL_JOB_EXECUTOR_ADDRESS:}
+      ip: ${XXL_JOB_EXECUTOR_IP:}
+      port: ${XXL_JOB_EXECUTOR_PORT:9998}
+      log-path: ${XXL_JOB_LOG_PATH:logs/xxl-job/system}
+      log-retention-days: ${XXL_JOB_LOG_RETENTION_DAYS:30}

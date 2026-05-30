@@ -1,0 +1,13 @@
+package com.lyf.supplychain.system.service;
+
+import com.baomidou.mybatisplus.extension.service.IService;
+import com.lyf.supplychain.system.entity.SysRoleMenu;
+
+/**
+ * 角色菜单关联服务接口。
+ *
+ * @author liyunfei
+ * @date 2026-05-15
+ */
+public interface SysRoleMenuService extends IService<SysRoleMenu> {
+}

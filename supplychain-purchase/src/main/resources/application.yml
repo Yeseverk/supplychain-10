@@ -1,0 +1,20 @@
+spring:
+  application:
+    name: supplychain-purchase
+  profiles:
+    active: local
+  config:
+    import:
+      - optional:nacos:supplychain-common.yml?group=SUPPLYCHAIN_GROUP
+      - optional:nacos:supplychain-purchase.yml?group=SUPPLYCHAIN_GROUP
+  cloud:
+    nacos:
+      discovery:
+        server-addr: ${NACOS_ADDR:127.0.0.1:8848}
+        namespace: ${NACOS_NAMESPACE:11b2def2-6737-44ad-be78-e3dc686a02ec}
+        group: SUPPLYCHAIN_GROUP
+      config:
+        server-addr: ${NACOS_ADDR:127.0.0.1:8848}
+        namespace: ${NACOS_NAMESPACE:11b2def2-6737-44ad-be78-e3dc686a02ec}
+        group: SUPPLYCHAIN_GROUP
+        file-extension: yml

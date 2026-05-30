@@ -1,0 +1,83 @@
+﻿# DataId: supplychain-order.yml
+# Group: SUPPLYCHAIN_GROUP
+# Namespace: 11b2def2-6737-44ad-be78-e3dc686a02ec
+# 说明：订单管理服务远程扩展配置。
+server:
+  port: 9207
+
+spring:
+  main:
+    allow-bean-definition-overriding: true
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://${MYSQL_HOST:127.0.0.1}:${MYSQL_PORT:3306}/${MYSQL_DATABASE:supplychain_dev}?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false
+    username: ${MYSQL_USERNAME:root}
+    password: 123456
+  data:
+    redis:
+      host: ${REDIS_HOST:127.0.0.1}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+      database: ${REDIS_DATABASE:0}
+
+mybatis-plus:
+  global-config:
+    db-config:
+      logic-delete-field: isDeleted
+      logic-delete-value: 1
+      logic-not-delete-value: 0
+  configuration:
+    map-underscore-to-camel-case: true
+
+xxl-job:
+  admin:
+    addresses: ${XXL_JOB_ADMIN_ADDRESSES:http://127.0.0.1:8080/xxl-job-admin}
+  executor:
+    appname: supplychain-order
+    address:
+    ip:
+    port: ${XXL_JOB_ORDER_PORT:9997}
+    logpath: logs/xxl-job/order
+    logretentiondays: 30
+  accessToken: ${XXL_JOB_ACCESS_TOKEN:}
+
+supplychain:
+  order:
+    outbound-callback-enabled: true
+    webhook:
+      signature-enabled: ${OMS_WEBHOOK_SIGNATURE_ENABLED:true}
+      reject-missing-secret: ${OMS_WEBHOOK_REJECT_MISSING_SECRET:false}
+      platforms:
+        SHOPIFY:
+          secret: ${OMS_WEBHOOK_SHOPIFY_SECRET:}
+          algorithm: HMAC_SHA256
+          encoding: BASE64
+        TIKTOK:
+          secret: ${OMS_WEBHOOK_TIKTOK_SECRET:}
+          algorithm: HMAC_SHA256
+          encoding: HEX
+        AMAZON:
+          secret: ${OMS_WEBHOOK_AMAZON_SECRET:}
+          algorithm: HMAC_SHA256
+          encoding: HEX
+        EBAY:
+          secret: ${OMS_WEBHOOK_EBAY_SECRET:}
+          algorithm: HMAC_SHA256
+          encoding: HEX
+    platform-pull:
+      enabled: ${OMS_PLATFORM_PULL_ENABLED:true}
+      platforms: ${OMS_PLATFORM_PULL_PLATFORMS:AMAZON,EBAY}
+      lookback-minutes: ${OMS_PLATFORM_PULL_LOOKBACK_MINUTES:10}
+      batch-size: ${OMS_PLATFORM_PULL_BATCH_SIZE:50}
+      mock-enabled: ${OMS_PLATFORM_PULL_MOCK_ENABLED:true}
+    outbound-event:
+      mode: ${OMS_OUTBOUND_EVENT_MODE:feign}
+      topic: ${WMS_OUTBOUND_EVENT_TOPIC:wms-outbound-topic}
+      consumer-group: ${OMS_OUTBOUND_EVENT_CONSUMER_GROUP:supplychain-order-outbound-consumer}
+      idempotent-ttl-days: ${OMS_OUTBOUND_EVENT_IDEMPOTENT_TTL_DAYS:7}
+
+rocketmq:
+  name-server: ${ROCKETMQ_NAME_SERVER:127.0.0.1:9876}
+  producer:
+    group: ${ROCKETMQ_OMS_PRODUCER_GROUP:supplychain-order-producer}
+

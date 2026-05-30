@@ -1,0 +1,67 @@
+﻿# DataId: supplychain-finance.yml
+# Group: SUPPLYCHAIN_GROUP
+# Namespace: 11b2def2-6737-44ad-be78-e3dc686a02ec
+# 说明：财务管理服务远程扩展配置。
+server:
+  port: 9205
+
+spring:
+  main:
+    allow-bean-definition-overriding: true
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://${MYSQL_HOST:127.0.0.1}:${MYSQL_PORT:3306}/${MYSQL_DATABASE:supplychain_dev}?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false
+    username: ${MYSQL_USERNAME:root}
+    password: 123456
+  data:
+    redis:
+      host: ${REDIS_HOST:127.0.0.1}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+      database: ${REDIS_DATABASE:0}
+
+mybatis-plus:
+  global-config:
+    db-config:
+      logic-delete-field: isDeleted
+      logic-delete-value: 1
+      logic-not-delete-value: 0
+  configuration:
+    map-underscore-to-camel-case: true
+
+xxl-job:
+  admin:
+    addresses: ${XXL_JOB_ADMIN_ADDRESSES:http://127.0.0.1:8080/xxl-job-admin}
+  executor:
+    appname: supplychain-finance
+    address:
+    ip:
+    port: ${XXL_JOB_FINANCE_PORT:9997}
+    logpath: logs/xxl-job/finance
+    logretentiondays: 30
+  accessToken: ${XXL_JOB_ACCESS_TOKEN:}
+
+supplychain:
+  finance:
+    payable-warning-days: ${FMS_PAYABLE_WARNING_DAYS:7}
+    exchange-rate-source: LOCAL_FALLBACK
+  bi:
+    realtime-cache-minutes: 5
+    daily-cache-minutes: 60
+    monthly-cache-minutes: 1440
+    reorder-safety-days: 15
+
+xxl:
+  job:
+    enabled: ${XXL_JOB_ENABLED:false}
+    admin:
+      addresses: ${XXL_JOB_ADMIN_ADDRESSES:http://127.0.0.1:8080/xxl-job-admin}
+    access-token: ${XXL_JOB_ACCESS_TOKEN:}
+    executor:
+      appname: ${XXL_JOB_FINANCE_EXECUTOR:supplychain-finance}
+      address: ${XXL_JOB_FINANCE_ADDRESS:}
+      ip: ${XXL_JOB_FINANCE_IP:}
+      port: ${XXL_JOB_FINANCE_PORT:9997}
+      log-path: ${XXL_JOB_FINANCE_LOG_PATH:logs/xxl-job/jobhandler}
+      log-retention-days: ${XXL_JOB_FINANCE_LOG_RETENTION_DAYS:30}
+
