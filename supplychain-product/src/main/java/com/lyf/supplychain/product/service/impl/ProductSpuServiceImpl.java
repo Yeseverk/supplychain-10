@@ -175,7 +175,9 @@ public class ProductSpuServiceImpl implements ProductSpuService {
         if (ProductConstants.SPU_STOPPED == spu.getStatus()) {
             BusinessException.throwException(14005, "已停售商品不能重新上架");
         }
-        validatePublish(spu);
+        if (ProductConstants.SPU_OFF_SALE != spu.getStatus()) {
+            validatePublish(spu);
+        }
         spu.setStatus(ProductConstants.SPU_ON_SALE);
         spu.setPublishTime(LocalDateTime.now());
         spuMapper.updateById(spu);
